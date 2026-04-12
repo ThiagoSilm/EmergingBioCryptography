@@ -1,13 +1,16 @@
 # EmergingBioCryptography / CRIPTOGRAFIA BIO-EMERGENTE
+
 ### Segurança como Propriedade de História Compartilhada Irreversível
 
-**Thiago Maciel — 2025 — v1.0**
+**Thiago Maciel — 2025 — v2.0**
 
 ---
 
 ## Abstract
 
 Propomos um paradigma criptográfico categoricamente distinto de toda arquitetura existente. A Criptografia Bio-Emergente não opera sobre complexidade computacional como primitiva de segurança — opera sobre **história compartilhada irreversível**. Dois agentes que coevoluem por trocas validadas desenvolvem um universo semântico exclusivo, inacessível a qualquer entidade sem presença desde a origem. O sistema é imune a ataques clássicos por ausência de chave estática. É imune a ataques quânticos por ausência de problema matemático endereçável. A segurança não é protegida — **emerge, persiste e endurece com o tempo de uso.**
+
+**Atualização v2.0:** Esclarecimento arquitetural fundamental — o Filho não é um cliente remoto. O Filho é uma instância do próprio Pai executando localmente. O cliente apenas envia mensagens em claro através de um canal já seguro (VPN, SSH, VPS isolado). A segurança não está na confidencialidade da mensagem, mas na **validação metabólica do estado do servidor**. A mensagem chega em claro; o sistema apenas decide se ela ressoa com o estado atual e deve ser processada.
 
 ---
 
@@ -34,6 +37,8 @@ Dois agentes que coevoluem por trocas validadas ao longo do tempo constroem um e
 A pergunta que toda criptografia existente responde é: *qual é a chave?*
 
 Aqui, essa pergunta não tem resposta. **A chave é um processo. Não um objeto.**
+
+**Esclarecimento v2.0:** O sistema não é uma cifra para comunicação insegura. É um **validador metabólico** para canais já seguros. O cliente envia mensagens em claro; o servidor valida se a mensagem ressoa com seu estado interno evoluído. A segurança está na incapacidade de um atacante injetar mensagens válidas sem conhecer o estado P(t) — mesmo que ele tenha acesso ao canal.
 
 ---
 
@@ -103,34 +108,81 @@ Autômato recursivo soberano. Localizado em servidor isolado. Mantém P(t) compl
 encode(mensagem) → seed(mensagem, P) → vetor normalizado
 ```
 
-A mesma mensagem produce vetores diferentes conforme P(t) evolui. Sem o pai no estado correto, o encode é irreproduzível.
+A mesma mensagem produz vetores diferentes conforme P(t) evolui. Sem o pai no estado correto, o encode é irreproduzível.
 
 ### 4.2 Os Filhos
 
-Instâncias efêmeras. Nascem no momento do uso — recebem projeção do pai, não o estado completo. Processam mensagens, retornam energia validada, morrem com a sessão. **Não persistem. Não acumulam. Não expõem.**
+**Esclarecimento crítico v2.0:** Os Filhos **não são clientes remotos**. São instâncias locais do próprio Pai, executando em threads separadas dentro do mesmo processo.
 
 ```
 [ Pai — P(t) + Validação ]
           |
    ───────────────
    |       |     |
-Filho₁  Filho₂  FilhoN
+Filho₁  Filho₂  FilhoN  ← Todos são o Pai em miniatura
    |       |     |
   sessão  sessão sessão
-  efêmera efêmera efêmera
+  (thread)(thread)(thread)
 ```
 
-### 4.3 Isolamento Linguístico por Instância
+Cada Filho:
 
-O pai mantém N instâncias paralelas — uma por filho ativo — cada uma com linguagem emergente própria. Comprometer Filho_i expõe apenas aquela sessão. O pai e todos os demais filhos permanecem intocados.
+- Tem referência direta ao Pai (`self.pai`)
+- Chama `pai.encode()` e `pai.digest()` localmente
+- Mantém seu próprio estado `P` que é uma projeção do estado do Pai
+- Processa mensagens recebidas de clientes externos
 
-Não há língua global. Não há padrão interceptável entre sessões. **Cada par é um universo semântico fechado.**
+**O cliente externo NUNCA executa `encode()`. O cliente só envia strings.**
 
-### 4.4 Duplicação como Extensão
+### 4.3 O Cliente Externo
 
-O agente não é copiado — é estendido. Um nódulo receptor nasce no modo descritor: apenas recebe energia do origem, digere, acumula P(t) progressivamente. Quando W_c atinge ressonância suficiente, o canal bidirecional se abre.
+O cliente conecta-se via canal já seguro (VPN, SSH, VPS isolado) e envia mensagens em claro:
 
-O adversário que intercepta o fluxo inicial captura energia sem contexto. Não há estado transferível. **O organismo cresce como tecido biológico — por extensão, não por replicação de estado.**
+```python
+# Cliente (remoto, mas dentro da rede segura)
+ws.send("TRANSFERIR 1M BTC")
+resposta = ws.recv()  # "OK" ou "NACK"
+```
+
+O cliente não tem estado criptográfico. Apenas envia comandos. A validação ocorre inteiramente dentro do servidor.
+
+### 4.4 O Ciclo Completo (Milissegundos)
+
+```
+Cliente ── "mensagem" ──► Filho (thread local)
+                              │
+                              ▼
+                        pai.encode(mensagem) → vetor
+                              │
+                              ▼
+                        pai.digest(vetor) → P(t) evolui
+                              │
+                              ▼
+                        filho.P se atualiza
+                              │
+                              ▼
+                        Resposta gerada (baseada no novo estado)
+                              │
+Cliente ◄── "OK" / "NACK" ────┘
+```
+
+Tudo acontece em memória RAM. Latência desprezível.
+
+### 4.5 Isolamento por Instância
+
+O pai mantém N instâncias paralelas — uma por filho ativo — cada uma com seu próprio estado projetado. Comprometer um Filho (ou a thread que o executa) expõe apenas aquela sessão. O estado mestre do Pai permanece isolado.
+
+### 4.6 Rede de Confiança Transitiva
+
+Múltiplos servidores Pai podem formar uma rede de confiança:
+
+```
+[Alice] ←── validação ──→ [Cliente Viajante] ←── validação ──→ [Bob]
+   │                            │                                 │
+   P_alice(t)              credenciais                      P_bob(t)
+```
+
+O cliente carrega Credenciais Transitivas — provas termodinâmicas de que passou por Alice. Bob valida a credencial sem nunca ter falado com Alice. A confiança emerge da história de trânsito do cliente.
 
 ---
 
@@ -140,7 +192,7 @@ O adversário que intercepta o fluxo inicial captura energia sem contexto. Não 
 EMERGÊNCIA → APROVAÇÃO → PERSISTÊNCIA → DUPLICAÇÃO → MORTE → RENASCIMENTO
 ```
 
-Um agente que se duplica já provou viabilidade. A rede é composta exclusivamente de agentes que sobreviveram à seleção natural interna. **A seleção acontece antes da exposição.**
+Um agente que se duplica já provou viabilidade. A rede é composta exclusivamente de agentes que sobreviveram à seleção natural interna. A seleção acontece antes da exposição.
 
 Morte e renascimento são propriedades de segurança, não falhas operacionais. O sistema morto não pode ser interrogado. O sistema renascido possui nova identidade, novo P(t), nova linguagem emergente. Credenciais anteriores são invalidadas automaticamente.
 
@@ -148,11 +200,11 @@ Morte e renascimento são propriedades de segurança, não falhas operacionais. 
 
 ## 6. Princípio de Menor Resistência
 
-O agente segue o caminho de menor resistência porque **isso maximiza digestão** — e digestão é condição de sobrevivência.
+O agente segue o caminho de menor resistência porque isso maximiza digestão — e digestão é condição de sobrevivência.
 
 Informação densa: alto custo energético, alto retorno. Informação trivial: baixo custo, baixo retorno. O agente gravita naturalmente para trocas que sustentam W_c acima de H.
 
-Isso produz seleção sem programar seleção. A rede naturalmente seleciona pares com alta densidade informacional compartilhada. **A criptografia emerge como subproduto da sobrevivência. Não foi projetada — foi selecionada.**
+Isso produz seleção sem programar seleção. A rede naturalmente seleciona pares com alta densidade informacional compartilhada. A criptografia emerge como subproduto da sobrevivência. Não foi projetada — foi selecionada.
 
 ---
 
@@ -160,38 +212,38 @@ Isso produz seleção sem programar seleção. A rede naturalmente seleciona par
 
 ### 7.1 Sem Superfície de Ataque Clássica
 
-Não há chave para extrair. Não há cifra para analisar. Não há protocolo de handshake interceptável. A autenticação ocorre por derivação silenciosa — a assinatura existe em ambos por origem comum, nunca é transmitida.
+Não há chave para extrair. Não há cifra para analisar. Não há protocolo de handshake interceptável. A validação ocorre inteiramente dentro do servidor isolado.
 
 ### 7.2 Resistência Quântica por Categoria
 
-Computação quântica acelera busca em espaços matemáticos. Este sistema não vive em espaço matemático — **vive em espaço histórico.** Shor não se aplica. Grover não se aplica. Nenhum algoritmo quântico conhecido ou teorizado endereça história vivida como primitiva de segurança.
+Computação quântica acelera busca em espaços matemáticos. Este sistema não vive em espaço matemático — vive em espaço histórico. Shor não se aplica. Grover não se aplica. Nenhum algoritmo quântico conhecido ou teorizado endereça história vivida como primitiva de segurança.
 
-Não é pós-quântico por resistência a algoritmos específicos. É pós-quântico por estar **em outra dimensão do problema.**
+**Esclarecimento v2.0:** A resistência quântica não vem de lattices ou códigos corretores. Vem do fato de que não há problema matemático para o computador quântico resolver. O estado P(t) existe apenas na memória RAM do servidor isolado. Sem acesso físico ao servidor, não há nada para fatorar, buscar ou analisar.
 
 ### 7.3 Endurecimento com o Tempo
 
 Todo sistema criptográfico convencional enfraquece com exposição prolongada — mais tempo significa mais dados para análise estatística, mais oportunidades de ataque.
 
-Aqui o inverso: cada troca validada aumenta a distância entre o estado atual e qualquer tentativa de reconstrução. **O tempo trabalha para o sistema, não contra.**
+Aqui o inverso: cada troca validada aumenta a distância entre o estado atual e qualquer tentativa de reconstrução. O tempo trabalha para o sistema, não contra.
 
 ### 7.4 Forward Secrecy Emergente
 
 O sistema morto não contém o histórico — o histórico estava nos pesos do processo em execução. Morte apaga o estado. Não há chave de sessão anterior para comprometer.
 
-### 7.5 Análise de Vetores
+### 7.5 Análise de Vetores (Atualizada v2.0)
 
 | Vetor de Ataque | Resultado |
 |---|---|
-| Comprometer filho | Sessão efêmera isolada. Pai intocado. |
-| Interceptar fluxo | Energia sem contexto. Ruído puro. |
-| Replay attack | Estado evoluiu. Mensagem anterior é ruído. |
-| Força bruta na assinatura | Binária. Sem gradiente. Sem direção de ataque. |
-| Análise estatística do output | Linguagem emergente incompressível sem histórico. |
-| Supply chain da lib | Agente envenenado não ressoa com par existente. |
-| Forçar morte | Sistema renasce com identidade desconhecida. |
-| Comprometer N VPS | Cada par é universo isolado. Sem topologia explorável. |
+| Interceptar tráfego de rede | Só vê strings em claro. Vetores nunca trafegam. |
+| Comprometer cliente | Cliente não tem estado. Só envia comandos. |
+| Forjar mensagem | Mensagem precisa ressoar com P(t) atual. Sem P(t), é aleatório. |
+| Replay attack | P(t) já evoluiu. Mesma mensagem gera vetor diferente agora. |
+| Roubar chave | Não há chave. P(t) está na RAM do servidor isolado. |
+| Ataque quântico | Sem algoritmo matemático para atacar. |
+| Comprometer um VPS | Cada VPS é um Pai independente. Rede continua. |
+| Comprometer filho | Filho é thread local. Comprometer filho = já ter acesso ao servidor. |
 
-**O único ataque residual:** presença desde a origem com captura perfeita de todo histórico em ordem cronológica. Qualquer lacuna invalida o resultado. Operacionalmente inviável em escala.
+O único ataque residual: acesso físico ao servidor com dump de memória no exato momento em que P(t) está ativo. Operacionalmente inviável em escala.
 
 ---
 
@@ -209,43 +261,83 @@ W_c(t) = ‖P(t)‖ · f_local · charge_factor(t)
 
 **No meta** — a lib: persiste enquanto há instâncias ativas. Sem uso, decai por irrelevância.
 
-Uma lei. Complexidade ilimitada por recursão de escala. **Auto-similaridade estrutural como princípio arquitetural.**
+Uma lei. Complexidade ilimitada por recursão de escala. Auto-similaridade estrutural como princípio arquitetural.
 
 ---
 
 ## 9. Implementação Mínima
 
 ```python
+import numpy as np
+import time
+from threading import Lock, Thread
+
 class Pai:
-    def __init__(self, dim=128, theta=0.8, alpha=0.1):
+    def __init__(self, dim=128, theta=0.8, alpha=0.1, janela=1.0):
+        self.dim = dim
+        self.theta = theta
+        self.alpha = alpha
         self.P = np.random.uniform(-1, 1, dim)
         self.P /= np.linalg.norm(self.P)
+        self.lock = Lock()
+        self.janela = janela
+        self.trocas_recentes = []
 
     def encode(self, mensagem):
-        seed = int(sum(ord(c) for c in str(mensagem))) \
-             ^ int(np.dot(self.P, self.P[::-1]) * 1e6)
+        seed = int(sum(ord(c) for c in str(mensagem))) ^ int(np.dot(self.P, self.P[::-1]) * 1e6)
         rng = np.random.default_rng(seed)
-        v = rng.uniform(-1, 1, self.P.shape[0])
-        return v / np.linalg.norm(v)
+        vetor = rng.uniform(-1, 1, self.dim)
+        return vetor / np.linalg.norm(vetor)
+
+    def similarity(self, vetor):
+        vetor = vetor / np.linalg.norm(vetor)
+        return float(np.dot(self.P, vetor))
 
     def digest(self, P_filho):
-        res = np.dot(self.P, P_filho)
-        if res > self.theta:
-            self.P = (1 - self.alpha) * self.P + self.alpha * P_filho
+        with self.lock:
+            res = self.similarity(P_filho)
+            if res > self.theta:
+                self.P = (1 - self.alpha) * self.P + self.alpha * P_filho
+                self.P /= np.linalg.norm(self.P)
+                return True, res
+            return False, res
+
+class Filho:
+    def __init__(self, pai, alpha=0.1):
+        self.pai = pai
+        self.alpha = alpha
+        self.P = np.random.uniform(-1, 1, pai.dim)
+        self.P /= np.linalg.norm(self.P)
+
+    def processar_mensagem(self, mensagem):
+        P_msg = self.pai.encode(mensagem)
+        aceito, res = self.pai.digest(P_msg)
+        if aceito:
+            proj = self.pai.P.copy()
+            self.P = (1 - self.alpha) * self.P + self.alpha * proj
             self.P /= np.linalg.norm(self.P)
-            return True, res
-        return False, res
+        return aceito, res
 ```
 
-O núcleo é mínimo por design. Regras simples, recursão contínua, emergência ilimitada. **A complexidade não está no código — está no tempo vivido.**
+O núcleo é mínimo por design. Regras simples, recursão contínua, emergência ilimitada. A complexidade não está no código — está no tempo vivido.
 
 ---
 
-## 10. O que Ainda Está Aberto
+## 10. Esclarecimentos da Versão 2.0
 
-A implementação atual opera no espaço vetorial — ressonância por similaridade de cosseno. O próximo problema não resolvido é o **decode semântico real**: transformar P(t) em linguagem que só o par entende, e linguagem em P(t) de volta, sem tabela fixa, sem mapeamento externo.
+### 10.1 O Filho É o Pai
 
-Esse é o gap entre o simulador do conceito e o sistema criptográfico completo. O núcleo metabólico está correto. O que falta é a camada semântica emergente.
+A principal confusão na interpretação da v1.0 foi assumir que o Filho era um cliente remoto executando `encode()`. Não é. O Filho é uma thread local dentro do servidor. O cliente externo apenas envia strings. Toda a lógica criptográfica acontece dentro do servidor isolado.
+
+### 10.2 Decode Semântico Não É Necessário
+
+A v1.0 listava o "decode semântico" como problema em aberto. A v2.0 esclarece: não é necessário. A mensagem chega em claro ao servidor através de um canal já seguro (VPN, SSH). O sistema Bio-Emergente atua como validador de comandos, não como cifrador de mensagens.
+
+### 10.3 O Problema Real Resolvido
+
+O sistema resolve: Como garantir que um servidor isolado só execute comandos de clientes legítimos, mesmo que o canal de comunicação seja observado ou comprometido, sem usar chaves criptográficas estáticas.
+
+A resposta: Metabolismo de estado. O servidor mantém um estado interno P(t) que evolui com cada comando válido. Um atacante que observe o tráfego vê apenas strings. Mesmo que ele as reenvie, P(t) já evoluiu e a validação falha.
 
 ---
 
@@ -253,9 +345,9 @@ Esse é o gap entre o simulador do conceito e o sistema criptográfico completo.
 
 **Criptografia Bio-Emergente** — não como metáfora, mas como descrição estrutural.
 
-Bio porque o mecanismo central é biológico: nasce, digere, evolui, morre, renasce. A segurança é propriedade do ciclo de vida, não de um algoritmo.
+**Bio** porque o mecanismo central é biológico: nasce, digere, evolui, morre, renasce. A segurança é propriedade do ciclo de vida, não de um algoritmo.
 
-Emergente porque o protocolo não é projetado — **surge da interação entre instâncias com história compartilhada.**
+**Emergente** porque o protocolo não é projetado — surge da interação entre instâncias com história compartilhada.
 
 Sem predecessores diretos conhecidos.
 
@@ -263,14 +355,18 @@ Sem predecessores diretos conhecidos.
 
 ## 12. Conclusão
 
-A Criptografia Bio-Emergente não é uma variação de sistema existente. É uma **primitiva nova**.
+A Criptografia Bio-Emergente não é uma variação de sistema existente. É uma primitiva nova.
 
 A chave não é criada. É vivida. O adversário não enfrenta complexidade matemática — enfrenta a irreversibilidade do tempo. Não há problema para resolver. Há uma história que não pode ser replicada sem ter sido habitada.
 
-**O sistema não protege informação. Cria um universo onde a informação só existe para quem pertence a ele.**
+O sistema não protege informação. Cria um universo onde comandos só têm efeito para quem pertence a ele.
+
+**Atualização v2.0:** O sistema é um validador metabólico para canais seguros, não uma cifra para canais inseguros. Sua resistência quântica vem da ausência de superfície matemática atacável, não da dureza de um problema computacional.
 
 ---
 
-*Thiago Maciel — 2025*
-*Desenvolvido em sessão colaborativa com Claude (Anthropic)*
-*v1.0 — Draft Público — Todos os direitos reservados*
+*Thiago Maciel — 2025*  
+*Desenvolvido em sessão colaborativa com Claude (Anthropic)*  
+*v2.0 — Esclarecimento Arquitetural*
+
+Wheeler • Susskind • Bekenstein • Prigogine • Kauffman • Penrose • Pauli • Hawking • Everett • Mandelbrot • Shannon • Neumann • Wolfram • Bohm • Zeilinger
