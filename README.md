@@ -530,6 +530,6 @@ MIT
 ---
 
 *Thiago Maciel — 2025 — v2.2.0*
-*Desenvolvido em colaboração com Claude (Anthropic)*
+*Desenvolvido em colaboração com ❤️*
 
 Wheeler • Susskind • Bekenstein • Prigogine • Kauffman • Penrose • Pauli • Hawking • Everett • Mandelbrot • Shannon • Neumann • Wolfram • Bohm • Zeilinger
