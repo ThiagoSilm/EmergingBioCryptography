@@ -1,13 +1,14 @@
 """
 bioemergent.py
-Thiago Maciel — 2025
+Thiago Maciel — 2025 — v2.2.1
 """
 
-__version__ = "2.2.0"
+__version__ = "2.2.1"
 
 import numpy as np
 import time
 import hashlib
+import hmac
 import secrets
 from threading import Lock
 from dataclasses import dataclass
@@ -40,8 +41,8 @@ class _Estado:
             else:
                 self.vetor = np.random.uniform(-1, 1, self.dim)
                 self.vetor /= np.linalg.norm(self.vetor)
-    def derivar_semente(self) -> int:
-        with self.lock: return int(np.dot(self.vetor, self.vetor[::-1]) * 1e12)
+    def derivar_semente(self) -> bytes:
+        with self.lock: return hashlib.sha256(self.vetor.tobytes()).digest()
     def copiar(self) -> np.ndarray:
         with self.lock: return self.vetor.copy()
 
@@ -70,48 +71,60 @@ class EstadoSeguro:
         self.dim, self.theta, self.alpha, self.epsilon, self.modo = dim, theta, alpha, epsilon, modo
         self._estado = _Estado(dim)
         self._metabolismo = _Metabolismo(janela, lambda_decay)
-        self._p_hash = 0
-        self._atualizar_hash()
+        self._p_hash = hashlib.sha256(self._estado.vetor.tobytes()).digest()
         self._contador = 0
         self._sinc = (modo == "servidor")
         self.cifradas = self.decifradas = self.validadas = self.rejeitadas = 0
     def _atualizar_hash(self): self._p_hash = self._estado.derivar_semente()
-    def _gerar_mascara(self, seed: int, tamanho: int) -> bytes:
-        h = hashlib.sha256(seed.to_bytes(16, 'big', signed=True)).digest()
+    def _gerar_mascara(self, seed: bytes, tamanho: int) -> bytes:
         m = bytearray(); c = 0
         while len(m) < tamanho:
-            m.extend(hashlib.sha256(h + c.to_bytes(4, 'big')).digest())
+            m.extend(hashlib.sha256(seed + c.to_bytes(4, 'big')).digest())
             c += 1
         return bytes(m[:tamanho])
     def _encode(self, msg: str) -> np.ndarray:
-        rng = np.random.default_rng(hash(msg) ^ self._p_hash)
+        seed = int.from_bytes(hashlib.sha256(msg.encode()).digest()[:8], 'big')
+        seed ^= int.from_bytes(self._p_hash[:8], 'big')
+        rng = np.random.default_rng(seed)
         v = rng.uniform(-1, 1, self.dim).astype(np.float64)
         return v / np.linalg.norm(v)
     def cifrar(self, plain: Union[str, bytes]) -> bytes:
         if isinstance(plain, str): plain = plain.encode()
         self.cifradas += 1
-        seed = self._p_hash ^ self._contador
+        seed = hashlib.sha256(self._p_hash + self._contador.to_bytes(8, 'big')).digest()
         mask = self._gerar_mascara(seed, len(plain))
-        return self._contador.to_bytes(8, 'big') + bytes(a ^ b for a, b in zip(plain, mask))
+        ciphertext = bytes(a ^ b for a, b in zip(plain, mask))
+        mac = hmac.new(self._p_hash, ciphertext, hashlib.sha256).digest()
+        self._contador += 1
+        return self._contador.to_bytes(8, 'big') + ciphertext + mac
     def decifrar(self, cipher: bytes) -> Tuple[Optional[str], bool]:
         self.decifradas += 1
-        if len(cipher) < 8: return None, False
+        if len(cipher) < 40: return None, False
         ctr = int.from_bytes(cipher[:8], 'big')
-        pay = cipher[8:]
+        mac_recebido = cipher[-32:]
+        ciphertext = cipher[8:-32]
+        mac_calculado = hmac.new(self._p_hash, ciphertext, hashlib.sha256).digest()
+        if not hmac.compare_digest(mac_recebido, mac_calculado):
+            self.rejeitadas += 1
+            return None, False
         f = self._metabolismo.fator_decaimento()
         if f < 0.999:
             self._estado.decair(f)
             self._atualizar_hash()
-        mask = self._gerar_mascara(self._p_hash ^ ctr, len(pay))
-        try: msg = bytes(a ^ b for a, b in zip(pay, mask)).decode()
-        except: self.rejeitadas += 1; return None, False
+        seed = hashlib.sha256(self._p_hash + ctr.to_bytes(8, 'big')).digest()
+        mask = self._gerar_mascara(seed, len(ciphertext))
+        plain_bytes = bytes(a ^ b for a, b in zip(ciphertext, mask))
+        try:
+            msg = plain_bytes.decode('utf-8')
+        except UnicodeDecodeError:
+            self.rejeitadas += 1
+            return None, False
         v = self._encode(msg)
         sim = self._estado.similaridade(v)
         if sim > self.theta:
             self._estado.evoluir(v, self.alpha)
             self._metabolismo.registrar()
             self._atualizar_hash()
-            self._contador += 1
             self.validadas += 1
             if self._metabolismo.carga() * np.linalg.norm(self._estado.vetor) < self.epsilon:
                 self.renascer()
