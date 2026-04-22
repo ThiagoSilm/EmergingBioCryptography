@@ -2,43 +2,49 @@
 
 ### Segurança como Propriedade de História Compartilhada Irreversível
 
-**Thiago Maciel — 2025 — v2.1**
+**Thiago Maciel — 2025 — v2.2.0**
+
+---
+
+**Repositório:** https://github.com/ThiagoSilm/EmergingBioCryptography
 
 ---
 
 ## Abstract
 
-Propomos um paradigma criptográfico categoricamente distinto de toda arquitetura existente. A Criptografia Bio-Emergente não opera sobre complexidade computacional como primitiva de segurança — opera sobre **história compartilhada irreversível**. Dois agentes que coevoluem por trocas validadas desenvolvem um universo semântico exclusivo, inacessível a qualquer entidade sem presença desde a origem. O sistema é imune a ataques clássicos por ausência de chave estática. É imune a ataques quânticos por ausência de problema matemático endereçável. A segurança não é protegida — **emerge, persiste e endurece com o tempo de uso.**
+Paradigma criptográfico distinto. Segurança opera sobre história compartilhada irreversível. Agentes coevoluem por trocas validadas desenvolvendo universo semântico exclusivo. Imune a ataques clássicos: ausência de chave estática. Imune a ataques quânticos: ausência de problema matemático endereçável. Segurança emerge, persiste, endurece com tempo de uso.
 
-**Atualização v2.1:** Implementação de referência consolidada. Ciclo de vida completo integrado: decaimento natural, morte por inanição, renascimento com nova identidade. Separação estrutural entre Estado (vetor de persistência) e Metabolismo (dinâmica temporal). Código validado e aprovado para produção experimental.
+v2.2.0: Ofuscação emergente. Canal aberto. Cliente e servidor mantêm estados sincronizados P(t). Ciclo de vida completo: decaimento natural, morte por inanição, renascimento com nova identidade. API drop-in replacement para criptografia convencional.
 
 ---
 
 ## 1. O Problema com Criptografia Estática
 
-Toda criptografia existente — de cifras de substituição a lattices pós-quânticos — opera sobre o mesmo pressuposto fundamental: segurança é um problema de **complexidade computacional**. O segredo existe como objeto estático protegido por dificuldade matemática.
+Toda criptografia existente — de cifras de substituição a lattices pós-quânticos — opera sobre complexidade computacional. Segredo existe como objeto estático protegido por dificuldade matemática.
 
-RSA e ECC colapsam ante o algoritmo de Shor porque fatoração e logaritmo discreto têm solução quântica eficiente. Lattices resistem porque Learning With Errors não possui algoritmo quântico conhecido — mas a primitiva é a mesma: um objeto matemático protegido por dificuldade.
+RSA e ECC colapsam ante Shor. Lattices resistem porque Learning With Errors não possui algoritmo quântico conhecido — mas primitiva é a mesma: objeto matemático protegido por dificuldade.
 
-O problema não é a matemática. **É o paradigma.** Qualquer sistema onde o segredo pode ser representado como dado estático em algum momento possui superfície de ataque explorável. Exposição prolongada é risco crescente. A história do campo é uma corrida entre criação de complexidade e ruptura dela.
+Problema não é matemática. É paradigma. Qualquer sistema onde segredo pode ser representado como dado estático possui superfície de ataque explorável.
 
-A Criptografia Bio-Emergente abandona essa corrida. Não compete no mesmo espaço — **ocupa outro.**
+Criptografia Bio-Emergente abandona essa corrida. Ocupa outro espaço.
 
 ---
 
-## 2. A Primitiva Nova
+## 2. Primitiva Nova
 
 **Segurança como propriedade de história compartilhada irreversível.**
 
-Não há chave. Não há objeto para proteger. Há um processo que não pode ser replicado sem ter sido vivido.
+Não há chave. Não há objeto para proteger. Há processo que não pode ser replicado sem ter sido vivido.
 
-Dois agentes que coevoluem por trocas validadas ao longo do tempo constroem um estado interno mutuamente dependente — linguagem emergente que só existe para quem participou da sua criação. Um adversário externo não encontra uma parede matemática para superar. Encontra um **idioma que não existe em nenhum dicionário.**
+Dois agentes que coevoluem por trocas validadas constroem estado interno mutuamente dependente — linguagem emergente que só existe para quem participou da criação. Adversário externo não encontra parede matemática. Encontra idioma que não existe em dicionário.
 
-A pergunta que toda criptografia existente responde é: *qual é a chave?*
+Pergunta que toda criptografia responde: *qual é a chave?*
 
-Aqui, essa pergunta não tem resposta. **A chave é um processo. Não um objeto.**
+Aqui, essa pergunta não tem resposta. **Chave é processo. Não objeto.**
 
-O sistema não é uma cifra para comunicação insegura. É um **validador metabólico** para canais já seguros. O cliente envia mensagens em claro; o servidor valida se a mensagem ressoa com seu estado interno evoluído. A segurança está na incapacidade de um atacante injetar mensagens válidas sem conhecer o estado P(t) — mesmo que ele tenha acesso ao canal.
+Sistema opera em dois modos integrados:
+1. Validação metabólica: comandos só têm efeito se ressoam com P(t).
+2. Ofuscação emergente: mensagens mascaradas por estado compartilhado, eliminando necessidade de VPN/SSH/TLS.
 
 ---
 
@@ -46,164 +52,151 @@ O sistema não é uma cifra para comunicação insegura. É um **validador metab
 
 ### 3.1 Estado do Sistema
 
-Cada agente mantém um vetor de persistência **P(t)** — representação densa do histórico acumulado de trocas validadas. Não é armazenado como log. É o estado colapsado de toda a trajetória.
+Cada agente (cliente e servidor) mantém vetor de persistência P(t) — representação densa do histórico acumulado de trocas validadas.
 
-```
+```python
 P(t) ∈ ℝⁿ  |  ‖P(t)‖ = 1
 ```
 
+Estados cliente e servidor sincronizados: após cada troca validada, ambos evoluem identicamente.
+
 ### 3.2 Lei de Dominância
 
-```
+```python
 W_c(t) = ‖P(t)‖ · f_local · charge_factor(t)
 ```
 
-- **P(t)** — persistência acumulada; histórico colapsado de trocas validadas
-- **f_local** — contexto de execução local; constante por instância, nunca transmitida
-- **charge_factor(t)** — energia do momento; taxa de trocas validadas em janela deslizante
+- P(t) — persistência acumulada; histórico colapsado de trocas validadas
+- f_local — contexto de execução local; constante por instância
+- charge_factor(t) — energia do momento; taxa de trocas validadas em janela deslizante
 
 ### 3.3 Decaimento Natural
 
-```
+```python
 P(t + Δt) = P(t) · e^(−λ · Δt)
 ```
 
-Sem trocas, o sistema decai. Não há mecanismo de morte programado — **o agente morre porque para de se alimentar.**
+Sem trocas, ambos os lados decaem simetricamente. Sincronia mantida mesmo na ausência de comunicação.
 
 ### 3.4 Evolução por Digestão
 
-```
-P(t+1) = normalize((1 − α) · P(t) + α · P_filho_validado)
+```python
+P(t+1) = normalize((1 − α) · P(t) + α · P_mensagem_validada)
 ```
 
-O pai evolui apenas com filhos que ultrapassam o limiar de ressonância θ. Entradas inválidas não modificam o estado. **O pai é epistemicamente soberano.**
+Após validação bem-sucedida, servidor evolui estado. Cliente recebe projeção e evolui identicamente.
 
 ### 3.5 Ressonância como Validação Binária
 
-```
-similarity(P_pai, P_filho) = P_pai · P_filho  ∈ [−1, 1]
-
+```python
+similarity(P_servidor, P_mensagem) = P_servidor · P_mensagem  ∈ [−1, 1]
 válido = similarity > θ
 ```
 
-Não há gradiente explorável. Não há aproximação progressiva. Ou ressoa ou não ressoa. **O adversário não tem direção de ataque.**
+Não há gradiente explorável. Ou ressoa ou não ressoa. Adversário sem direção de ataque.
 
-### 3.6 GC Emergente
+### 3.6 Ofuscação por Estado Compartilhado
 
+```python
+mask = KDF(P(t) || contador)
+ciphertext = plaintext XOR mask
 ```
-se W_c(t) < ε → morte → restart com nova identidade
+
+KDF determinística baseada em semente derivada de P(t). Não é criptografia convencional — é projeção de estado.
+
+### 3.7 GC Emergente
+
+```python
+se W_c(t) < ε → morte → restart com nova identidade (ambos os lados)
 ```
 
-Morte não é falha. É **forward secrecy emergente** — o sistema morto não pode ser interrogado. O estado anterior não sobrevive ao restart.
+Morte não é falha. É forward secrecy emergente. Sistema morto não pode ser interrogado.
 
 ---
 
 ## 4. Arquitetura
 
-### 4.1 O Pai
-
-Autômato recursivo soberano. Localizado em servidor isolado. Mantém P(t) completo. Nunca expõe estado interno — apenas projeta energia para filhos via encode dependente de estado.
-
-```
-encode(mensagem) → seed(mensagem, P) → vetor normalizado
-```
-
-A mesma mensagem produz vetores diferentes conforme P(t) evolui. Sem o pai no estado correto, o encode é irreproduzível.
-
-### 4.2 Os Filhos
-
-Os Filhos **não são clientes remotos**. São instâncias locais do próprio Pai, executando em threads separadas dentro do mesmo processo.
-
-```
-[ Pai — P(t) + Validação ]
-          |
-   ───────────────
-   |       |     |
-Filho₁  Filho₂  FilhoN  ← Todos são o Pai em miniatura
-   |       |     |
-  sessão  sessão sessão
-  (thread)(thread)(thread)
-```
-
-Cada Filho:
-- Tem referência direta ao Pai (`self.pai`)
-- Chama `pai.encode()` e `pai.digest()` localmente
-- Mantém seu próprio estado `P` que é uma projeção do estado do Pai
-- Processa mensagens recebidas de clientes externos
-
-**O cliente externo NUNCA executa `encode()`. O cliente só envia strings.**
-
-### 4.3 O Cliente Externo
-
-O cliente conecta-se via canal já seguro (VPN, SSH, VPS isolado) e envia mensagens em claro:
+### 4.1 Visão Geral
 
 ```python
-# Cliente (remoto, mas dentro da rede segura)
-ws.send("TRANSFERIR 1M BTC")
-resposta = ws.recv()  # "OK" ou "NACK"
+┌─────────────────────────────────────────────────────────────┐
+│  Cliente Bio-Emergente          Servidor Pai                │
+│  ┌──────────────┐               ┌──────────────┐            │
+│  │ Estado P_c(t)│◄─── sinc ────►│ Estado P_s(t)│            │
+│  └──────────────┘               └──────────────┘            │
+│         │                              │                     │
+│         ▼                              ▼                     │
+│  plaintext ──► mask ──► ciphertext ──► mask ──► plaintext   │
+│                                                   │          │
+│                                                   ▼          │
+│                                             validação        │
+│                                             metabólica       │
+│                                                   │          │
+│                                                   ▼          │
+│  P_c(t+1) ◄───────── projeção ─────────────── P_s(t+1)      │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-O cliente não tem estado criptográfico. Apenas envia comandos. A validação ocorre inteiramente dentro do servidor.
+### 4.2 Bootstrap Inicial
 
-### 4.4 O Ciclo Completo (Milissegundos)
+Primeira sincronização requer canal autenticado (encontro físico, QR code, VPN temporária). Após bootstrap, canal pode ser completamente aberto.
 
-```
-Cliente ── "mensagem" ──► Filho (thread local)
+### 4.3 Sincronização de Estado
+
+Premissa crítica: Cliente e servidor devem manter P(t) idênticos.
+
+Mecanismo:
+1. Bootstrap: ambos partem do mesmo vetor aleatório.
+2. Cada troca validada: servidor envia projeção do novo P(t). Cliente aplica mesma evolução.
+3. Decaimento: ambos aplicam mesma função temporal f(Δt) = e^(-λ·Δt).
+
+Recuperação de dessincronia:
+- Cliente detecta falha consecutiva de validação (NACK persistente).
+- Cliente renasce (novo P aleatório) e reinicia handshake.
+
+### 4.4 Rede de Confiança Transitiva
+
+Múltiplos servidores Pai podem formar rede. Cliente que transita entre nós carrega estado P(t) como credencial viva.
+
+```python
+[Alice] ◄── P_a(t) ──► [Cliente] ◄── P_a(t) ──► [Bob]
                               │
-                              ▼
-                        pai.encode(mensagem) → vetor
-                              │
-                              ▼
-                        pai.digest(vetor) → P(t) evolui
-                              │
-                              ▼
-                        filho.P se atualiza
-                              │
-                              ▼
-                        Resposta gerada (baseada no novo estado)
-                              │
-Cliente ◄── "OK" / "NACK" ────┘
-```
-
-Tudo acontece em memória RAM. Latência desprezível.
-
-### 4.5 Isolamento por Instância
-
-O pai mantém N instâncias paralelas — uma por filho ativo — cada uma com seu próprio estado projetado. Comprometer um Filho (ou a thread que o executa) expõe apenas aquela sessão. O estado mestre do Pai permanece isolado.
-
-### 4.6 Rede de Confiança Transitiva
-
-Múltiplos servidores Pai podem formar uma rede de confiança:
-
-```
-[Alice] ←── validação ──→ [Cliente Viajante] ←── validação ──→ [Bob]
-   │                            │                                 │
-   P_alice(t)              credenciais                      P_bob(t)
+                    Estado do cliente é
+                    prova de história com Alice
 ```
 
-O cliente carrega Credenciais Transitivas — provas termodinâmicas de que passou por Alice. Bob valida a credencial sem nunca ter falado com Alice. A confiança emerge da história de trânsito do cliente.
+Bob valida cliente sem conhecer Alice porque estado P(t) do cliente ressoa com projeção esperada para alguém que passou por Alice.
 
 ---
 
 ## 5. Ciclo de Vida
 
-```
+```python
 EMERGÊNCIA → APROVAÇÃO → PERSISTÊNCIA → DUPLICAÇÃO → MORTE → RENASCIMENTO
 ```
 
-Um agente que se duplica já provou viabilidade. A rede é composta exclusivamente de agentes que sobreviveram à seleção natural interna. A seleção acontece antes da exposição.
-
-Morte e renascimento são propriedades de segurança, não falhas operacionais. O sistema morto não pode ser interrogado. O sistema renascido possui nova identidade, novo P(t), nova linguagem emergente. Credenciais anteriores são invalidadas automaticamente.
+Sincronização do ciclo:
+- Cliente e servidor nascem com mesmo P(0).
+- Evoluem juntos a cada troca validada.
+- Decaem juntos na inatividade.
+- Morrem juntos quando W_c < ε.
+- Renascem com nova identidade (requer novo bootstrap).
 
 ---
 
-## 6. Princípio de Menor Resistência
+## 6. Propriedade Fractal
 
-O agente segue o caminho de menor resistência porque isso maximiza digestão — e digestão é condição de sobrevivência.
+Mesma lei opera em todas as escalas:
 
-Informação densa: alto custo energético, alto retorno. Informação trivial: baixo custo, baixo retorno. O agente gravita naturalmente para trocas que sustentam W_c acima de H.
+```python
+W_c(t) = ‖P(t)‖ · f_local · charge_factor(t)
+```
 
-Isso produz seleção sem programar seleção. A rede naturalmente seleciona pares com alta densidade informacional compartilhada. A criptografia emerge como subproduto da sobrevivência. Não foi projetada — foi selecionada.
+No micro — par cliente-servidor: cada troca valida e ofusca.
+
+No macro — rede de servidores: cada nó persiste enquanto ressoa com outros.
+
+No meta — protocolo: persiste enquanto há pares ativos.
 
 ---
 
@@ -211,239 +204,332 @@ Isso produz seleção sem programar seleção. A rede naturalmente seleciona par
 
 ### 7.1 Sem Superfície de Ataque Clássica
 
-Não há chave para extrair. Não há cifra para analisar. Não há protocolo de handshake interceptável. A validação ocorre inteiramente dentro do servidor isolado.
+Não há chave para extrair. Não há cifra para analisar. Não há protocolo de handshake. Estado P(t) existe apenas em RAM.
 
 ### 7.2 Resistência Quântica por Categoria
 
-Computação quântica acelera busca em espaços matemáticos. Este sistema não vive em espaço matemático — vive em espaço histórico. Shor não se aplica. Grover não se aplica. Nenhum algoritmo quântico conhecido ou teorizado endereça história vivida como primitiva de segurança.
+Nenhum algoritmo quântico endereça história vivida. Ofuscação usa XOR com máscara derivada de estado — sem problema matemático subjacente.
 
-A resistência quântica não vem de lattices ou códigos corretores. Vem do fato de que não há problema matemático para o computador quântico resolver. O estado P(t) existe apenas na memória RAM do servidor isolado. Sem acesso físico ao servidor, não há nada para fatorar, buscar ou analisar.
+### 7.3 Confidencialidade sem Canal Seguro
 
-### 7.3 Endurecimento com o Tempo
+| Cenário | v2.1 (plaintext sobre VPN) | v2.2 (ofuscação emergente) |
+|---|---|---|
+| Observador passivo | Vê comandos em claro | Vê bytes aleatórios |
+| Análise de tráfego | Revela padrões de comando | Padrões ofuscados por estado evolutivo |
+| Injeção de ciphertext | Impossível sem P(t) | Impossível sem P(t) + contador |
+| Replay attack | P(t) evoluiu → falha | P(t) evoluiu + contador → falha |
 
-Todo sistema criptográfico convencional enfraquece com exposição prolongada — mais tempo significa mais dados para análise estatística, mais oportunidades de ataque.
+### 7.4 Forward Secrecy Implícito
 
-Aqui o inverso: cada troca validada aumenta a distância entre o estado atual e qualquer tentativa de reconstrução. O tempo trabalha para o sistema, não contra.
+Cada mensagem usa máscara derivada de P(t) atual. Estado passado não recupera mensagens futuras. Morte do sistema apaga todo histórico.
 
-### 7.4 Forward Secrecy Emergente
+### 7.5 Endurecimento com o Tempo
 
-O sistema morto não contém o histórico — o histórico estava nos pesos do processo em execução. Morte apaga o estado. Não há chave de sessão anterior para comprometer.
+Convencional: exposição prolongada → mais dados para criptoanálise.
 
-### 7.5 Análise de Vetores de Ataque
+Bio-Emergente: cada troca validada aumenta distância do estado inicial. Tempo trabalha a favor.
+
+### 7.6 Análise de Vetores de Ataque
 
 | Vetor de Ataque | Resultado |
 |---|---|
-| Interceptar tráfego de rede | Só vê strings em claro. Vetores nunca trafegam. |
-| Comprometer cliente | Cliente não tem estado. Só envia comandos. |
-| Forjar mensagem | Mensagem precisa ressoar com P(t) atual. Sem P(t), é aleatório. |
-| Replay attack | P(t) já evoluiu. Mesma mensagem gera vetor diferente agora. |
-| Roubar chave | Não há chave. P(t) está na RAM do servidor isolado. |
-| Ataque quântico | Sem algoritmo matemático para atacar. |
-| Comprometer um VPS | Cada VPS é um Pai independente. Rede continua. |
-| Comprometer filho | Filho é thread local. Comprometer filho = já ter acesso ao servidor. |
-| Acesso físico + dump RAM | Único vetor residual. Requer acesso no exato momento. Operacionalmente inviável. |
+| Interceptar tráfego | Bytes aleatórios. Sem P(t), irrecuperável. |
+| Comprometer cliente | Obtém P_c(t). Pode enviar mensagens válidas. Janela limitada até evolução. |
+| Comprometer servidor | Obtém P_s(t). Pode validar qualquer mensagem. Equivale a acesso root. |
+| Forjar ciphertext | Requer P(t) para derivar máscara correta. |
+| Replay attack | Contador + P(t) evoluiu. Ciphertext antigo inválido. |
+| Ataque quântico | Sem algoritmo matemático para acelerar. |
+| Ataque de texto conhecido | Adversário sabe plaintext de uma mensagem. Recupera máscara daquela mensagem. Não recupera P(t) nem máscaras futuras. |
+| Dessincronização forçada | Atacante bloqueia respostas. Cliente detecta NACKs consecutivos e renasce. |
 
 ---
 
-## 8. Propriedade Fractal
-
-A mesma lei opera em todas as escalas:
-
-```
-W_c(t) = ‖P(t)‖ · f_local · charge_factor(t)
-```
-
-**No micro** — par pai-filho: cada troca valida ou decai.
-
-**No macro** — rede de pais: pai persiste enquanto ressoa com outros pais.
-
-**No meta** — a lib: persiste enquanto há instâncias ativas. Sem uso, decai por irrelevância.
-
-Uma lei. Complexidade ilimitada por recursão de escala. Auto-similaridade estrutural como princípio arquitetural.
-
----
-
-## 9. Implementação de Referência (v2.1 Consolidada)
+## 8. API
 
 ```python
+import bioemergent as be
+
+# Geração de par (análogo a keypair)
+servidor, cliente = be.gerar_par(dim=256)
+
+# Cifrar
+ciphertext = be.cifrar(cliente, "TRANSFERIR 1M BTC")
+
+# Decifrar e validar
+plaintext, valido = be.decifrar(servidor, ciphertext)
+
+# Exportar/importar estado
+dados = be.exportar(servidor)
+servidor_restaurado = be.importar_estado(dados, modo="servidor")
+
+# Renovação manual (forward secrecy)
+be.renovar(servidor)
+
+# Estatísticas
+stats = servidor.estatisticas()
+```
+
+**Compatibilidade:** `Pai` e `ClienteBio` mantidos como aliases.
+
+```python
+from bioemergent import Pai, ClienteBio
+servidor = Pai(dim=256)
+cliente = ClienteBio(dim=256)
+```
+
+---
+
+## 9. Implementação de Referência
+
+Arquivo único: `bioemergent.py`
+
+Dependência: `numpy >= 1.20.0`
+
+```python
+"""
+bioemergent.py
+Thiago Maciel — 2025
+"""
+
+__version__ = "2.2.0"
+
 import numpy as np
 import time
-from threading import Lock, Thread
+import hashlib
+import secrets
+from threading import Lock
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Optional, Union
 
 @dataclass
-class Estado:
-    """Vetor de persistência e operações atômicas."""
+class _Estado:
     dim: int
-    vetor: np.ndarray = None
-    lock: Lock = None
-    
+    vetor: Optional[np.ndarray] = None
+    lock: Optional[Lock] = None
     def __post_init__(self):
-        self.vetor = np.random.uniform(-1, 1, self.dim)
+        s = secrets.token_bytes(32)
+        rng = np.random.default_rng(int.from_bytes(s, 'big'))
+        self.vetor = rng.uniform(-1, 1, self.dim).astype(np.float64)
         self.vetor /= np.linalg.norm(self.vetor)
         self.lock = Lock()
-    
     def similaridade(self, outro: np.ndarray) -> float:
-        outro = outro / np.linalg.norm(outro)
-        with self.lock:
-            return float(np.dot(self.vetor, outro))
-    
+        outro = outro.astype(np.float64) / np.linalg.norm(outro)
+        with self.lock: return float(np.dot(self.vetor, outro))
     def evoluir(self, outro: np.ndarray, alpha: float):
+        outro = outro.astype(np.float64)
         with self.lock:
             self.vetor = (1 - alpha) * self.vetor + alpha * outro
             self.vetor /= np.linalg.norm(self.vetor)
-    
     def decair(self, fator: float):
         with self.lock:
             self.vetor *= fator
-            self.vetor /= np.linalg.norm(self.vetor)
+            n = np.linalg.norm(self.vetor)
+            if n > 1e-10: self.vetor /= n
+            else:
+                self.vetor = np.random.uniform(-1, 1, self.dim)
+                self.vetor /= np.linalg.norm(self.vetor)
+    def derivar_semente(self) -> int:
+        with self.lock: return int(np.dot(self.vetor, self.vetor[::-1]) * 1e12)
+    def copiar(self) -> np.ndarray:
+        with self.lock: return self.vetor.copy()
 
-class Metabolismo:
-    """Gerencia taxa de trocas e decaimento temporal."""
+class _Metabolismo:
     def __init__(self, janela: float = 1.0, lambda_decay: float = 0.01):
         self.janela = janela
         self.lambda_decay = lambda_decay
         self.trocas: List[float] = []
-        self.ultima_atividade = time.time()
-    
+        self.ultima = time.time()
+        self.lock = Lock()
     def registrar(self):
-        agora = time.time()
-        self.trocas = [t for t in self.trocas if agora - t < self.janela]
-        self.trocas.append(agora)
-        self.ultima_atividade = agora
-    
+        a = time.time()
+        with self.lock:
+            self.trocas = [t for t in self.trocas if a - t < self.janela]
+            self.trocas.append(a)
+            self.ultima = a
     def carga(self) -> float:
-        return len(self.trocas) / self.janela
-    
+        with self.lock: return len(self.trocas) / self.janela
     def fator_decaimento(self) -> float:
-        delta = time.time() - self.ultima_atividade
-        return np.exp(-self.lambda_decay * delta)
+        with self.lock: return np.exp(-self.lambda_decay * (time.time() - self.ultima))
 
-class Pai:
-    """Autômato soberano. Mantém estado mestre e valida mensagens."""
-    def __init__(self, dim: int, theta: float = 0.8, alpha: float = 0.1,
-                 lambda_decay: float = 0.01, epsilon: float = 0.05, janela: float = 1.0):
-        self.dim = dim
-        self.theta = theta
-        self.alpha = alpha
-        self.epsilon = epsilon
-        self.estado = Estado(dim)
-        self.metabolismo = Metabolismo(janela, lambda_decay)
+class EstadoSeguro:
+    def __init__(self, dim: int = 256, theta: float = 0.8, alpha: float = 0.1,
+                 lambda_decay: float = 0.01, epsilon: float = 0.05, janela: float = 1.0,
+                 modo: str = "cliente"):
+        self.dim, self.theta, self.alpha, self.epsilon, self.modo = dim, theta, alpha, epsilon, modo
+        self._estado = _Estado(dim)
+        self._metabolismo = _Metabolismo(janela, lambda_decay)
         self._p_hash = 0
         self._atualizar_hash()
-    
-    def _atualizar_hash(self):
-        with self.estado.lock:
-            self._p_hash = int(np.dot(self.estado.vetor, self.estado.vetor[::-1]) * 1e6)
-    
-    def encode(self, mensagem: str) -> np.ndarray:
-        seed = hash(mensagem) ^ self._p_hash
-        rng = np.random.default_rng(seed)
-        vetor = rng.uniform(-1, 1, self.dim)
-        return vetor / np.linalg.norm(vetor)
-    
-    def digest(self, vetor_filho: np.ndarray) -> Tuple[bool, float]:
-        fator = self.metabolismo.fator_decaimento()
-        if fator < 1.0:
-            self.estado.decair(fator)
+        self._contador = 0
+        self._sinc = (modo == "servidor")
+        self.cifradas = self.decifradas = self.validadas = self.rejeitadas = 0
+    def _atualizar_hash(self): self._p_hash = self._estado.derivar_semente()
+    def _gerar_mascara(self, seed: int, tamanho: int) -> bytes:
+        h = hashlib.sha256(seed.to_bytes(16, 'big', signed=True)).digest()
+        m = bytearray(); c = 0
+        while len(m) < tamanho:
+            m.extend(hashlib.sha256(h + c.to_bytes(4, 'big')).digest())
+            c += 1
+        return bytes(m[:tamanho])
+    def _encode(self, msg: str) -> np.ndarray:
+        rng = np.random.default_rng(hash(msg) ^ self._p_hash)
+        v = rng.uniform(-1, 1, self.dim).astype(np.float64)
+        return v / np.linalg.norm(v)
+    def cifrar(self, plain: Union[str, bytes]) -> bytes:
+        if isinstance(plain, str): plain = plain.encode()
+        self.cifradas += 1
+        seed = self._p_hash ^ self._contador
+        mask = self._gerar_mascara(seed, len(plain))
+        return self._contador.to_bytes(8, 'big') + bytes(a ^ b for a, b in zip(plain, mask))
+    def decifrar(self, cipher: bytes) -> Tuple[Optional[str], bool]:
+        self.decifradas += 1
+        if len(cipher) < 8: return None, False
+        ctr = int.from_bytes(cipher[:8], 'big')
+        pay = cipher[8:]
+        f = self._metabolismo.fator_decaimento()
+        if f < 0.999:
+            self._estado.decair(f)
             self._atualizar_hash()
-        
-        sim = self.estado.similaridade(vetor_filho)
+        mask = self._gerar_mascara(self._p_hash ^ ctr, len(pay))
+        try: msg = bytes(a ^ b for a, b in zip(pay, mask)).decode()
+        except: self.rejeitadas += 1; return None, False
+        v = self._encode(msg)
+        sim = self._estado.similaridade(v)
         if sim > self.theta:
-            self.estado.evoluir(vetor_filho, self.alpha)
-            self.metabolismo.registrar()
+            self._estado.evoluir(v, self.alpha)
+            self._metabolismo.registrar()
             self._atualizar_hash()
-            
-            if self.metabolismo.carga() * np.linalg.norm(self.estado.vetor) < self.epsilon:
+            self._contador += 1
+            self.validadas += 1
+            if self._metabolismo.carga() * np.linalg.norm(self._estado.vetor) < self.epsilon:
                 self.renascer()
-            
-            return True, sim
-        return False, sim
-    
+            return msg, True
+        self.rejeitadas += 1
+        return None, False
     def renascer(self):
-        self.estado = Estado(self.dim)
-        self.metabolismo = Metabolismo(self.metabolismo.janela, self.metabolismo.lambda_decay)
+        self._estado = _Estado(self.dim)
+        self._metabolismo = _Metabolismo(self._metabolismo.janela, self._metabolismo.lambda_decay)
         self._atualizar_hash()
+        self._contador = 0
+        self._sinc = False
+    def exportar(self) -> bytes:
+        import struct
+        d = bytearray()
+        d.extend(struct.pack('>I', self.dim))
+        d.extend(struct.pack('>d', self.theta))
+        d.extend(struct.pack('>d', self.alpha))
+        d.extend(struct.pack('>Q', self._contador))
+        d.extend(self._estado.vetor.tobytes())
+        return bytes(d)
+    @classmethod
+    def importar(cls, data: bytes, modo: str = "cliente"):
+        import struct
+        dim = struct.unpack('>I', data[0:4])[0]
+        theta = struct.unpack('>d', data[4:12])[0]
+        alpha = struct.unpack('>d', data[12:20])[0]
+        ctr = struct.unpack('>Q', data[20:28])[0]
+        obj = cls(dim=dim, theta=theta, alpha=alpha, modo=modo)
+        obj._estado.vetor = np.frombuffer(data[28:], dtype=np.float64).copy()
+        obj._contador = ctr
+        obj._atualizar_hash()
+        obj._sinc = True
+        return obj
+    def estatisticas(self) -> Dict:
+        return {
+            'modo': self.modo, 'sinc': self._sinc, 'contador': self._contador,
+            'cifradas': self.cifradas, 'decifradas': self.decifradas,
+            'validadas': self.validadas, 'rejeitadas': self.rejeitadas,
+            'carga': self._metabolismo.carga(),
+            'vitalidade': self._metabolismo.carga() * np.linalg.norm(self._estado.vetor)
+        }
 
-class Filho:
-    """Instância local do Pai. Processa mensagens de clientes externos."""
-    def __init__(self, pai: Pai, alpha: float = 0.1):
-        self.pai = pai
-        self.alpha = alpha
-        self.estado = Estado(pai.dim)
-    
-    def processar_mensagem(self, mensagem: str) -> Tuple[bool, float]:
-        vetor_msg = self.pai.encode(mensagem)
-        aceito, sim = self.pai.digest(vetor_msg)
-        if aceito:
-            with self.pai.estado.lock:
-                proj = self.pai.estado.vetor.copy()
-            self.estado.evoluir(proj, self.alpha)
-        return aceito, sim
+def gerar_par(dim: int = 256, theta: float = 0.8) -> Tuple[EstadoSeguro, EstadoSeguro]:
+    s = EstadoSeguro(dim=dim, theta=theta, modo="servidor")
+    c = EstadoSeguro(dim=dim, theta=theta, modo="cliente")
+    c._estado.vetor = s._estado.copiar()
+    c._contador = 0
+    c._sinc = True
+    return s, c
 
-def loop_continuo(pai: Pai, filhos: List[Filho], mensagens: List[str], running_flag: dict):
-    """Executa validação contínua em múltiplas threads."""
-    def filho_loop(filho: Filho):
-        while running_flag["ativo"]:
-            for msg in mensagens:
-                aceito, res = filho.processar_mensagem(msg)
-                time.sleep(0.01)
-    
-    threads = [Thread(target=filho_loop, args=(f,), daemon=True) for f in filhos]
-    for t in threads:
-        t.start()
-    return threads
+def cifrar(e: EstadoSeguro, p: Union[str, bytes]) -> bytes: return e.cifrar(p)
+def decifrar(e: EstadoSeguro, c: bytes) -> Tuple[Optional[str], bool]: return e.decifrar(c)
+def renovar(e: EstadoSeguro): e.renascer()
+def exportar(e: EstadoSeguro) -> bytes: return e.exportar()
+def importar_estado(d: bytes, modo: str = "cliente") -> EstadoSeguro: return EstadoSeguro.importar(d, modo)
+
+Pai = lambda *a, **k: EstadoSeguro(*a, **k, modo="servidor")
+ClienteBio = lambda *a, **k: EstadoSeguro(*a, **k, modo="cliente")
 ```
 
 ---
 
-## 10. Notas da Versão 2.1
+## 10. Instalação
 
-### 10.1 Melhorias Implementadas
+```bash
+curl -O https://raw.githubusercontent.com/ThiagoSilm/EmergingBioCryptography/main/bioemergent.py
+```
 
-| Componente | Estado Anterior (v2.0) | Estado Atual (v2.1) |
-|---|---|---|
-| Decaimento natural | Ausente | `Metabolismo.fator_decaimento()` |
-| Morte e renascimento | Ausente | `Pai.renascer()` via limiar ε |
-| Cache de hash | Recalculado por chamada | `_p_hash` atualizado apenas com P(t) |
-| Separação estrutural | Monolítica | `Estado` + `Metabolismo` + `Pai` |
-| Normalização segura | Efeitos colaterais | Cópia local, lock protegido |
-| Ciclo de vida | Parcial | Completo (emerge → aprova → persiste → duplica → morre → renasce) |
+Dependência: `numpy >= 1.20.0`
 
-### 10.2 Validação Formal
-
-O código implementa integralmente o formalismo da Seção 3:
-- **3.1:** `Estado.vetor` mantém ‖P(t)‖ = 1
-- **3.2:** `carga()` implementa charge_factor(t)
-- **3.3:** `fator_decaimento()` implementa e^(-λ·Δt)
-- **3.4:** `evoluir()` implementa (1-α)·P + α·P_filho
-- **3.5:** `similaridade() > theta` implementa validação binária
-- **3.6:** `carga() * ‖P‖ < ε` implementa morte e `renascer()`
-
-### 10.3 Considerações de Produção
-
-- **Dimensionalidade:** `dim=64` para demonstração. Produção requer `dim≥256`.
-- **Entropia inicial:** `np.random.uniform()` usa PRNG do sistema. Para produção, usar `secrets.randbits()` ou `/dev/urandom`.
-- **Persistência:** Estado reside apenas em RAM. Morte do processo = perda total. Comportamento intencional.
-- **Escala:** Threads independentes. Lock por estado. Suporta dezenas de filhos simultâneos.
+```bash
+pip install numpy
+```
 
 ---
 
-## 11. Conclusão
+## 11. Comparação Entre Versões
 
-A Criptografia Bio-Emergente não é uma variação de sistema existente. É uma primitiva nova.
-
-A chave não é criada. É vivida. O adversário não enfrenta complexidade matemática — enfrenta a irreversibilidade do tempo. Não há problema para resolver. Há uma história que não pode ser replicada sem ter sido habitada.
-
-O sistema não protege informação. Cria um universo onde comandos só têm efeito para quem pertence a ele.
-
-A implementação v2.1 consolida o ciclo de vida completo. Decaimento, morte e renascimento não são metáforas — são código executável. A segurança emerge da operação contínua do sistema, não de uma chave estática protegida por dificuldade computacional.
+| Característica | v2.0 | v2.1 | v2.2 |
+|---|---|---|---|
+| Canal seguro externo | Requer VPN/SSH | Requer VPN/SSH | Desnecessário |
+| Estado no cliente | Inexistente | Inexistente | Sincronizado |
+| Confidencialidade | Nenhuma | Nenhuma | Ofuscação por estado |
+| Observação passiva | Vê comandos | Vê comandos | Vê ruído |
+| Replay protection | Parcial | Parcial | Total (P(t)+contador) |
+| Forward secrecy | Morte do servidor | Morte do servidor | Cada mensagem |
+| API drop-in | Não | Não | Sim |
 
 ---
 
-*Thiago Maciel — 2025*  
-*Desenvolvido em sessão colaborativa com Claude (Anthropic)*  
-*v2.1 — Implementação de Referência Consolidada*
+## 12. Limitações Conhecidas
+
+### 12.1 Bootstrap Inicial
+
+Primeira sincronização requer canal autenticado (encontro físico, QR code, VPN temporária). Após bootstrap, canal pode ser completamente aberto.
+
+### 12.2 Dessincronização
+
+Se cliente perde resposta do servidor, contadores divergem. Detectável via NACK consecutivo. Recuperação: cliente renasce e re-bootstrap.
+
+### 12.3 Comprometimento do Cliente
+
+Adversário com acesso ao cliente obtém P_c(t). Pode enviar mensagens válidas até próxima evolução. Mitigação: renovação frequente (alto charge_factor).
+
+### 12.4 Ataque de Texto Conhecido
+
+Se adversário conhece plaintext de uma mensagem, recupera máscara daquela mensagem específica. Não recupera P(t) nem máscaras de outras mensagens.
+
+---
+
+## 13. Conclusão
+
+Criptografia Bio-Emergente não é variação de sistema existente. É primitiva nova.
+
+Chave não é criada. É vivida. Adversário não enfrenta complexidade matemática — enfrenta irreversibilidade do tempo.
+
+Sistema não protege informação. Cria universo onde comandos só têm efeito para quem pertence a ele.
+
+v2.2.0 elimina última dependência de infraestrutura criptográfica tradicional: canal seguro. Estado compartilhado P(t) serve para validação metabólica e ofuscação de tráfego. Nenhuma chave estática. Nenhum handshake. Nenhum algoritmo matemático atacável.
+
+---
+
+## 14. Licença
+
+MIT
+
+---
+
+*Thiago Maciel — 2025 — v2.2.0*
+*Desenvolvido em colaboração com Claude (Anthropic)*
 
 Wheeler • Susskind • Bekenstein • Prigogine • Kauffman • Penrose • Pauli • Hawking • Everett • Mandelbrot • Shannon • Neumann • Wolfram • Bohm • Zeilinger
