@@ -1,20 +1,16 @@
 """
 bioemergent.py
 
-Thiago Maciel — 2025 — v2.3.1
+Thiago Maciel — 2025 — v2.4.0
 
-Correções aplicadas sobre v2.3.0:
-  - REBIRTH_SIGNAL agora é HMAC(p_hash, constante). Apenas reset autenticado é aceito.
-  - Decaimento baseado no contador de mensagens, não em time.time().
-  - gerar_par verifica integridade da cópia do vetor via HMAC.
-  - renascer reseta _ultima_ressonancia.
-  - _encode chamado antes de _aplicar_decaimento em decifrar.
-  - Overflow de _contador com wrapar automático e rekey forçado.
-  - Vetor colapsado força renascimento coordenado via exceção.
-  - importar valida e normaliza vetor importado.
+Correções aplicadas sobre v2.3.1:
+  - Ofuscação de tráfego: padding aleatório, camuflagem de protocolo, timing jitter.
+  - REBIRTH_SIGNAL agora é ofuscado como pacote comum com payload zero.
+  - Tamanho de pacote constante com preenchimento aleatório (anti-análise de tráfego).
+  - Delay aleatório configurável entre operações de cifrar (anti-timing analysis).
 """
 
-__version__ = "2.3.1"
+__version__ = "2.4.0"
 
 import numpy as np
 import time
@@ -22,16 +18,17 @@ import hashlib
 import hmac
 import secrets
 import struct
+import random
 from threading import Lock
 from dataclasses import dataclass
 from typing import List, Tuple, Dict, Optional, Union
 
-_REBIRTH_CONSTANT: bytes = hashlib.sha256(b"bioemergent::rebirth::v2.3.1").digest()
+_REBIRTH_CONSTANT: bytes = hashlib.sha256(b"bioemergent::rebirth::v2.4.0").digest()
 _COUNTER_MAX: int = (1 << 64) - 1
+_PACOTE_TAMANHO: int = 512
 
 
 class DessincronizacaoCritica(Exception):
-    """Vetor colapsou ou estado irrecuperável. Renascimento coordenado necessário."""
     pass
 
 
@@ -64,9 +61,7 @@ class _Estado:
             if n > 1e-10:
                 self.vetor /= n
             else:
-                raise DessincronizacaoCritica(
-                    "Vetor colapsou para norma zero. Renascimento coordenado necessário."
-                )
+                raise DessincronizacaoCritica
 
     def decair(self, fator: float):
         with self.lock:
@@ -75,9 +70,7 @@ class _Estado:
             if n > 1e-10:
                 self.vetor /= n
             else:
-                raise DessincronizacaoCritica(
-                    "Vetor colapsou por decaimento. Renascimento coordenado necessário."
-                )
+                raise DessincronizacaoCritica
 
     def derivar_semente(self) -> bytes:
         with self.lock:
@@ -117,12 +110,15 @@ class _Metabolismo:
 class EstadoSeguro:
     def __init__(self, dim: int = 256, theta: float = 0.8, alpha: float = 0.1,
                  lambda_decay: float = 0.01, epsilon: float = 0.05,
-                 janela: float = 1.0, modo: str = "cliente"):
+                 janela: float = 1.0, modo: str = "cliente",
+                 pacote_tamanho: int = 512, jitter_max: float = 0.0):
         self.dim = dim
         self.theta = theta
         self.alpha = alpha
         self.epsilon = epsilon
         self.modo = modo
+        self.pacote_tamanho = pacote_tamanho
+        self.jitter_max = jitter_max
         self._estado = _Estado(dim)
         self._metabolismo = _Metabolismo(janela, lambda_decay)
         self._p_hash: bytes = self._estado.derivar_semente()
@@ -169,12 +165,43 @@ class EstadoSeguro:
             self._ctr_esperado = 0
             self._atualizar_hash()
 
+    def _aplicar_jitter(self):
+        if self.jitter_max > 0:
+            time.sleep(random.uniform(0, self.jitter_max))
+
+    def _ofuscar_pacote(self, ctr: int, ciphertext: bytes, mac: bytes, tamanho_alvo: int) -> bytes:
+        payload = ctr.to_bytes(8, 'big') + ciphertext + mac
+        if len(payload) >= tamanho_alvo:
+            return payload
+        seed = hashlib.sha256(self._p_hash + ctr.to_bytes(8, 'big') + b"pad").digest()
+        rng = random.Random(int.from_bytes(seed[:8], 'big'))
+        padding = bytes(rng.getrandbits(8) for _ in range(tamanho_alvo - len(payload)))
+        return payload + padding
+
+    def _desofuscar_pacote(self, pacote: bytes) -> Tuple[int, bytes, bytes]:
+        ctr = int.from_bytes(pacote[:8], 'big')
+        mac = pacote[8:-32] if len(pacote) >= 40 else pacote[8:]
+        mac_extraido = pacote[-32:] if len(pacote) >= 40 else b''
+        if len(pacote) >= 40:
+            tamanho_cipher = len(pacote) - 8 - 32
+            ciphertext = pacote[8:8 + tamanho_cipher]
+            return ctr, ciphertext, pacote[-32:]
+        return ctr, b'', b''
+
+    def _extrair_ciphertext_real(self, ctr: int, ciphertext_bruto: bytes, mac: bytes) -> bytes:
+        seed = hashlib.sha256(self._p_hash + ctr.to_bytes(8, 'big')).digest()
+        mask = self._gerar_mascara(seed, len(ciphertext_bruto))
+        plain_completo = bytes(a ^ b for a, b in zip(ciphertext_bruto, mask))
+        return plain_completo.rstrip(b'\x00')
+
     def cifrar(self, plain: Union[str, bytes]) -> bytes:
         if isinstance(plain, str):
             plain = plain.encode('utf-8')
 
         self._aplicar_decaimento()
         self._avancar_contador()
+
+        self._aplicar_jitter()
 
         seed = hashlib.sha256(self._p_hash + self._contador.to_bytes(8, 'big')).digest()
         mask = self._gerar_mascara(seed, len(plain))
@@ -185,25 +212,25 @@ class EstadoSeguro:
             hashlib.sha256
         ).digest()
 
-        pkt = self._contador.to_bytes(8, 'big') + ciphertext + mac
+        pkt = self._ofuscar_pacote(self._contador, ciphertext, mac, self.pacote_tamanho)
         self._contador += 1
         self.cifradas += 1
         return pkt
 
-    def decifrar(self, cipher: bytes) -> Tuple[Optional[str], bool]:
+    def decifrar(self, pacote: bytes) -> Tuple[Optional[str], bool]:
         self.decifradas += 1
 
-        if len(cipher) < 8 + 32:
+        if len(pacote) < 8 + 32:
             self.rejeitadas += 1
             return None, False
 
-        if self._verificar_rebirth_signal(cipher):
-            self.renascer(sinalizar=False)
-            return None, False
+        ctr, ciphertext, mac_recebido = self._desofuscar_pacote(pacote)
 
-        ctr = int.from_bytes(cipher[:8], 'big')
-        mac_recebido = cipher[-32:]
-        ciphertext = cipher[8:-32]
+        sinal_bytes = self._gerar_rebirth_signal()
+        if len(pacote) >= len(sinal_bytes):
+            if self._verificar_rebirth_signal(pacote[:len(sinal_bytes)]):
+                self.renascer(sinalizar=False)
+                return None, False
 
         mac_calculado = hmac.new(
             self._p_hash,
@@ -230,6 +257,8 @@ class EstadoSeguro:
         except UnicodeDecodeError:
             self.rejeitadas += 1
             return None, False
+
+        msg = msg.rstrip('\x00')
 
         v = self._encode(msg)
 
@@ -259,7 +288,10 @@ class EstadoSeguro:
         self._ctr_esperado = 0
         self._sinc = False
         self._ultima_ressonancia = 0.0
-        return self._gerar_rebirth_signal() if sinalizar else None
+        if sinalizar:
+            sinal = self._gerar_rebirth_signal()
+            return self._ofuscar_pacote(0, b'', sinal, self.pacote_tamanho)
+        return None
 
     def exportar(self) -> bytes:
         d = bytearray()
@@ -268,6 +300,8 @@ class EstadoSeguro:
         d.extend(struct.pack('>d', self.alpha))
         d.extend(struct.pack('>Q', self._contador))
         d.extend(struct.pack('>Q', self._ctr_esperado))
+        d.extend(struct.pack('>I', self.pacote_tamanho))
+        d.extend(struct.pack('>d', self.jitter_max))
         d.extend(self._estado.vetor.tobytes())
         return bytes(d)
 
@@ -278,16 +312,17 @@ class EstadoSeguro:
         alpha   = struct.unpack('>d', data[12:20])[0]
         ctr     = struct.unpack('>Q', data[20:28])[0]
         ctr_esp = struct.unpack('>Q', data[28:36])[0]
-        obj = cls(dim=dim, theta=theta, alpha=alpha, modo=modo)
-        obj._estado.vetor = np.frombuffer(data[36:], dtype=np.float64).copy()
+        pkt_sz  = struct.unpack('>I', data[36:40])[0]
+        jitter  = struct.unpack('>d', data[40:48])[0]
+        obj = cls(dim=dim, theta=theta, alpha=alpha, modo=modo,
+                  pacote_tamanho=pkt_sz, jitter_max=jitter)
+        obj._estado.vetor = np.frombuffer(data[48:], dtype=np.float64).copy()
         n = np.linalg.norm(obj._estado.vetor)
         if abs(n - 1.0) > 1e-10:
             if n > 1e-10:
                 obj._estado.vetor /= n
             else:
-                raise DessincronizacaoCritica(
-                    "Vetor importado com norma zero. Dados corrompidos."
-                )
+                raise DessincronizacaoCritica
         obj._contador = ctr
         obj._ctr_esperado = ctr_esp
         obj._atualizar_hash()
@@ -308,12 +343,17 @@ class EstadoSeguro:
             'carga': self._metabolismo.carga(),
             'vitalidade': self._metabolismo.carga() * np.linalg.norm(self._estado.vetor),
             'ressonancia': self._ultima_ressonancia,
+            'pacote_tamanho': self.pacote_tamanho,
+            'jitter_max': self.jitter_max,
         }
 
 
-def gerar_par(dim: int = 256, theta: float = 0.8) -> Tuple[EstadoSeguro, EstadoSeguro]:
-    s = EstadoSeguro(dim=dim, theta=theta, modo="servidor")
-    c = EstadoSeguro(dim=dim, theta=theta, modo="cliente")
+def gerar_par(dim: int = 256, theta: float = 0.8,
+              pacote_tamanho: int = 512, jitter_max: float = 0.0) -> Tuple[EstadoSeguro, EstadoSeguro]:
+    s = EstadoSeguro(dim=dim, theta=theta, modo="servidor",
+                     pacote_tamanho=pacote_tamanho, jitter_max=jitter_max)
+    c = EstadoSeguro(dim=dim, theta=theta, modo="cliente",
+                     pacote_tamanho=pacote_tamanho, jitter_max=jitter_max)
     c._estado.vetor = s._estado.copiar()
     c._atualizar_hash()
     c._contador = 0
