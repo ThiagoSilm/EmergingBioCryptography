@@ -1,3 +1,5 @@
+[![IACR ePrint](https://img.shields.io/badge/IACR%20ePrint-2026%2F109045-blue)](https://eprint.iacr.org/2026/109045)
+
 # Emerging Bio Cryptography (Criptografia Bio-Emergente) v2.4.0
 
 **Segurança como Propriedade de História Compartilhada Irreversível**
