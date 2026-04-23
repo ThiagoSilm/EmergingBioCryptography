@@ -25,7 +25,6 @@ from typing import List, Tuple, Dict, Optional, Union
 
 _REBIRTH_CONSTANT: bytes = hashlib.sha256(b"bioemergent::rebirth::v2.4.0").digest()
 _COUNTER_MAX: int = (1 << 64) - 1
-_PACOTE_TAMANHO: int = 512
 
 
 class DessincronizacaoCritica(Exception):
@@ -178,22 +177,6 @@ class EstadoSeguro:
         padding = bytes(rng.getrandbits(8) for _ in range(tamanho_alvo - len(payload)))
         return payload + padding
 
-    def _desofuscar_pacote(self, pacote: bytes) -> Tuple[int, bytes, bytes]:
-        ctr = int.from_bytes(pacote[:8], 'big')
-        mac = pacote[8:-32] if len(pacote) >= 40 else pacote[8:]
-        mac_extraido = pacote[-32:] if len(pacote) >= 40 else b''
-        if len(pacote) >= 40:
-            tamanho_cipher = len(pacote) - 8 - 32
-            ciphertext = pacote[8:8 + tamanho_cipher]
-            return ctr, ciphertext, pacote[-32:]
-        return ctr, b'', b''
-
-    def _extrair_ciphertext_real(self, ctr: int, ciphertext_bruto: bytes, mac: bytes) -> bytes:
-        seed = hashlib.sha256(self._p_hash + ctr.to_bytes(8, 'big')).digest()
-        mask = self._gerar_mascara(seed, len(ciphertext_bruto))
-        plain_completo = bytes(a ^ b for a, b in zip(ciphertext_bruto, mask))
-        return plain_completo.rstrip(b'\x00')
-
     def cifrar(self, plain: Union[str, bytes]) -> bytes:
         if isinstance(plain, str):
             plain = plain.encode('utf-8')
@@ -224,7 +207,9 @@ class EstadoSeguro:
             self.rejeitadas += 1
             return None, False
 
-        ctr, ciphertext, mac_recebido = self._desofuscar_pacote(pacote)
+        ctr = int.from_bytes(pacote[:8], 'big')
+        mac_recebido = pacote[-32:]
+        ciphertext = pacote[8:-32]
 
         sinal_bytes = self._gerar_rebirth_signal()
         if len(pacote) >= len(sinal_bytes):
@@ -257,8 +242,6 @@ class EstadoSeguro:
         except UnicodeDecodeError:
             self.rejeitadas += 1
             return None, False
-
-        msg = msg.rstrip('\x00')
 
         v = self._encode(msg)
 
