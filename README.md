@@ -309,7 +309,7 @@ Dependência única: `numpy`.
 |---|---|---|
 | 2.2.x | 2.3.x | Formato do pacote: adicionado MAC (32 bytes adicionais). `decifrar` retorna `Tuple[Optional[str], bool]`. |
 | 2.3.0 | 2.3.1 | `renovar()` retorna HMAC autenticado, não constante nua. `exportar()` inclui `ctr_esperado`. |
-| 2.3.x | 2.4.0 | `exportar()` inclui `pacote_tamanho` (4 bytes) e `jitter_max` (8 bytes). Formato de pacote inclui padding. `gerar_par()` aceita `pacote_tamanho` e `jitter_max`. `__init__()` requer `pacote_tamanho` e `jitter_max`. |
+| 2.3.x | 2.4.0 | `exportar()` inclui `pacote_tamanho` (4 bytes) e `jitter_max` (32 bytes). Formato de pacote inclui padding. `gerar_par()` aceita `pacote_tamanho` e `jitter_max`. `__init__()` requer `pacote_tamanho` e `jitter_max`. |
 
 ---
 
@@ -402,7 +402,7 @@ Incomensurabilidade criptográfica não elimina ataques ao ambiente:
 | Ataque | Classe | Mitigação |
 |---|---|---|
 | Comprometimento de RAM | Físico | Memória travada, execução em enclave seguro |
-| Comprometimento de `estado.bin`| Físico/Local | Criptografia do arquivo com senha (PBKDF2) |
+| Comprometimento de estado serializado (ex.: via exportar) | Físico/Local | Criptografia do arquivo com senha (PBKDF2) |
 | Keylogger / screen capture | Físico | Integridade do endpoint |
 | Engenharia social | Humano | Educação do usuário |
 | Análise de tráfego avançada | Rede | Padding + jitter já implementados |
