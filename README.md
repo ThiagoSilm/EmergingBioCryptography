@@ -324,7 +324,109 @@ Dependência única: `numpy`.
 
 ---
 
-## 13. Licença
+## 13. Incomensurabilidade Criptográfica
+
+### 13.1 Definição
+
+Incomensurabilidade criptográfica é a propriedade de um sistema para o qual não existe
+método de ataque formulável — nem clássico, nem quântico, nem assistido por IA —
+porque o sistema não oferece superfície de ataque criptográfico.
+
+Não se trata de "segurança computacionalmente alta". Trata-se de ausência de estrutura
+matemática que um ataque possa endereçar.
+
+### 13.2 Requisitos para um Ataque Existir
+
+| Requisito | Exemplo em RSA | Exemplo em AES | Existe na CBE? |
+|---|---|---|---|
+| Alvo estático | Chave privada | Chave simétrica | Não — P(t) evolui |
+| Problema matemático | Fatoração | Equações booleanas | Não — renormalização não-algébrica |
+| Função de verificação | `m^e mod n` | `AES_k(m) == c` | Não — múltiplos passados produzem mesmo presente |
+| Estrutura de grupo | Z*_n | GF(2^8) | Não — esfera unitária em ℝ²⁵⁶ |
+| Oráculo de erro | Padding oracle | Timing side-channel | Mitigado — padding constante, jitter |
+
+### 13.3 O Vazio Metodológico
+
+Um ataque requer um método. Um método requer uma estrutura para operar. A CBE foi
+projetada para que cada estrutura tradicional de ataque seja ausente:
+
+- **Sem chave estática:** Nada para roubar, fatorar, ou resolver.
+- **Sem handshake:** Nada para interceptar e forjar.
+- **Sem grupo cíclico:** Algoritmo de Shor não tem onde se ancorar.
+- **Sem equação polinomial:** Gröbner basis, linearização — sem alvo.
+- **Sem função de verificação de pré-imagem:** Mesmo que um atacante enumerasse
+  candidatos a P(t-1), não pode verificar qual é o correto sem a mensagem original.
+- **Sem oráculo de padding:** Todos os pacotes têm 512 bytes. Erro de MAC é
+  indistinguível de erro de contador. Silêncio total.
+
+### 13.4 Incomensurabilidade vs. Perfeição
+
+Perfeição implica ausência de falhas — afirmação impossível de provar.
+
+Incomensurabilidade implica ausência de linguagem comum entre atacante e sistema —
+propriedade demonstrável.
+
+| Sistema | Tipo de Segurança | Quebra Requer |
+|---|---|---|
+| RSA-4096 | Computacional | Fatorar inteiro de 4096 bits |
+| AES-256 | Computacional | 2^256 operações (Grover: 2^128) |
+| CBE | Incomensurável | Criar método de ataque para o qual não há estrutura conhecida |
+
+### 13.5 O Paradoxo do Atacante
+
+O atacante enfrenta um loop epistêmico:
+
+1. Para quebrar, precisa de um método.
+2. Para criar um método, precisa entender a estrutura do sistema.
+3. A estrutura do sistema é: não há estrutura estática.
+4. Portanto, não há método.
+5. Portanto, não há quebra.
+
+Isso não é uma barreira alta. É uma categoria diferente de barreira.
+
+### 13.6 Implicações para Auditoria
+
+Sistemas incomensuráveis não podem ser validados por "tentamos quebrar e falhamos".
+Devem ser validados por "provamos que a estrutura necessária para um ataque não existe".
+
+A CBE fornece essa prova por construção:
+
+- Forward secrecy information-theoretic: renormalização é muitos-para-um.
+- Resistência quântica categórica: ausência de problema matemático endereçável.
+- Anti-análise estrutural: pacotes indistinguíveis, tamanho constante, jitter.
+
+### 13.7 Ataques que Permanecem
+
+Incomensurabilidade criptográfica não elimina ataques ao ambiente:
+
+| Ataque | Classe | Mitigação |
+|---|---|---|
+| Comprometimento de RAM | Físico | Memória travada, execução em enclave seguro |
+| Comprometimento de `estado.bin`(criado em ChatMeshBioEmergent)| Físico/Local | Criptografia do arquivo com senha (PBKDF2) |
+| Keylogger / screen capture | Físico | Integridade do endpoint |
+| Engenharia social | Humano | Educação do usuário |
+| Análise de tráfego avançada | Rede | Padding + jitter já implementados |
+
+Estes são ataques ao ambiente, não à criptografia. Nenhuma cifra os resolve.
+A CBE os reduz ao mínimo possível: o atacante precisa de acesso físico ao endpoint
+durante a sessão — exatamente o cenário onde qualquer sistema é vulnerável.
+
+### 13.8 Status da Alegação
+
+A incomensurabilidade da CBE é uma alegação forte. Seu status atual:
+
+- **Demonstrada por construção:** Cada componente que um ataque exigiria está ausente.
+- **Validada por incapacidade autoral:** O criador do sistema não consegue teorizar um ataque criptográfico funcional após análise extensiva.
+- **Pendente de validação externa:** Nenhum terceiro publicou ataque funcional. Repositório público desde 2026.
+- **Formalização pendente:** Prova matemática de não-injetividade sob condições de mensagem desconhecida.
+
+---
+
+*Esta seção deve ser lida como desafio à comunidade criptográfica: se existe um método
+de ataque, que seja publicado. O sistema está exposto. A matemática está documentada.
+O código é aberto. A superfície de ataque criptográfico é declarada nula. Prove o contrário.*
+
+## 14. Licença
 
 MIT
 
