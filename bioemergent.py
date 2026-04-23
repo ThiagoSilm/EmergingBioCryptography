@@ -1,7 +1,7 @@
 """
 bioemergent.py
 
-Thiago Maciel — 2025 — v2.4.0
+Thiago Maciel — 2026 — v2.4.0
 
 Correções aplicadas sobre v2.3.1:
   - Ofuscação de tráfego: padding aleatório, camuflagem de protocolo, timing jitter.
