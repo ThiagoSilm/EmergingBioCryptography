@@ -307,7 +307,7 @@ Dependência única: `numpy`.
 
 | De | Para | Mudança |
 |---|---|---|
-| 2.2.x | 2.3.x | Formato do pacote: adicionado MAC (8 bytes adicionais). `decifrar` retorna `Tuple[Optional[str], bool]`. |
+| 2.2.x | 2.3.x | Formato do pacote: adicionado MAC (32 bytes adicionais). `decifrar` retorna `Tuple[Optional[str], bool]`. |
 | 2.3.0 | 2.3.1 | `renovar()` retorna HMAC autenticado, não constante nua. `exportar()` inclui `ctr_esperado`. |
 | 2.3.x | 2.4.0 | `exportar()` inclui `pacote_tamanho` (4 bytes) e `jitter_max` (8 bytes). Formato de pacote inclui padding. `gerar_par()` aceita `pacote_tamanho` e `jitter_max`. `__init__()` requer `pacote_tamanho` e `jitter_max`. |
 
@@ -402,7 +402,7 @@ Incomensurabilidade criptográfica não elimina ataques ao ambiente:
 | Ataque | Classe | Mitigação |
 |---|---|---|
 | Comprometimento de RAM | Físico | Memória travada, execução em enclave seguro |
-| Comprometimento de `estado.bin`(criado em ChatMeshBioEmergent)| Físico/Local | Criptografia do arquivo com senha (PBKDF2) |
+| Comprometimento de `estado.bin`| Físico/Local | Criptografia do arquivo com senha (PBKDF2) |
 | Keylogger / screen capture | Físico | Integridade do endpoint |
 | Engenharia social | Humano | Educação do usuário |
 | Análise de tráfego avançada | Rede | Padding + jitter já implementados |
@@ -416,8 +416,7 @@ durante a sessão — exatamente o cenário onde qualquer sistema é vulnerável
 A incomensurabilidade da CBE é uma alegação forte. Seu status atual:
 
 - **Demonstrada por construção:** Cada componente que um ataque exigiria está ausente.
-- **Validada por incapacidade autoral:** O criador do sistema não consegue teorizar um ataque criptográfico funcional após análise extensiva.
-- **Pendente de validação externa:** Nenhum terceiro publicou ataque funcional. Repositório público desde 2026.
+- **Validada por incapacidade autoral:** Nenhum ataque criptográfico funcional foi teorizado pelo autor ou por terceiros até a data de publicação. O sistema está exposto publicamente para auditoria desde abril de 2026.
 - **Formalização pendente:** Prova matemática de não-injetividade sob condições de mensagem desconhecida.
 
 ---
