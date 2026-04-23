@@ -188,7 +188,7 @@ Múltiplos pares (P_anterior, mensagem) produzem o mesmo P_atual.
 Atacante com P_atual não pode reconstruir P_anterior unicamente, mesmo com poder 
 computacional ilimitado. Mensagens passadas são irrecuperáveis.
 
-* Nota A renormalização é provadamente não-injetiva. A não-injetividade da função acoplada completa é um problema matemático aberto. Ver ePrint 2026/109045 para discussão completa.*
+*Nota: A renormalização é provadamente não-injetiva. A não-injetividade da função acoplada completa é um problema matemático aberto. Ver ePrint 2026/109045 para discussão completa.*
 
 ### 7.2.2 Ofuscação de Tráfego
 
