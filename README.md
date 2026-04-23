@@ -187,6 +187,15 @@ Sem chave estática. Sem handshake. P(t) apenas em RAM. Nada para roubar de disc
 
 Sem problema matemático subjacente (fatoração, logaritmo discreto, lattices, códigos). HMAC e SHA-256 usados apenas como KDF e autenticador — resistentes a Grover (2^128 segurança).
 
+### 7.2.1 Deslocamento de Vetor em $R^{256}$
+A segurança não reside mais na ocultação de um segredo estático, mas na trajetória de um estado dinâmico. O atacante quântico enfrenta uma explosão combinatória de caminhos históricos, onde cada mensagem validada altera a topologia do espaço de busca.
+
+### 7.2.2 Camuflagem Metabólica
+A inclusão de padding determinístico e jitter configurável transforma o tráfego em ruído branco estatístico. O protocolo não apenas cifra a informação; ele anula a existência da própria comunicação perante sistemas de análise de fluxo baseados em IA ou heurística.
+
+### 7.2.3 Sincronia Bio-Inspirada
+O uso de Similaridade de Cosseno e HMAC garante uma defesa em profundidade:HMAC: Barreira lógica de integridade.Cosseno: Sensor de vitalidade (ressonância). Se a métrica cair, o sistema executa o REBIRTH_SIGNAL autenticado, forçando a regeneração do par.
+
 ### 7.3 Confidencialidade, Integridade e Autenticação
 
 | Propriedade | Mecanismo |
