@@ -2,7 +2,7 @@
 
 ### Segurança como Propriedade de História Compartilhada Irreversível
 
-**Thiago Maciel — 2025 — v2.4.0**
+**Thiago Maciel — 2026 — v2.4.0**
 
 ---
 
@@ -273,11 +273,11 @@ Dependência única: `numpy`.
 
 | Versão | Data | Mudanças |
 |---|---|---|
-| 2.2.0 | 2025 | Versão inicial pública. |
-| 2.2.1 | 2025 | HMAC-SHA256. Contador em `cifrar()`. SHA-256 determinístico. Entropia 256 bits. |
-| 2.3.0 | 2025 | Ressonância rebaixada a métrica. Gate real: HMAC + ctr. |
-| 2.3.1 | 2025 | REBIRTH_SIGNAL autenticado. Decaimento por contador. Verificação de cópia inicial. Overflow de contador com wrapar. Colapso de vetor gera exceção. Importar valida vetor. |
-| 2.4.0 | 2025 | Ofuscação de tráfego: padding determinístico-aleatório, tamanho de pacote configurável, timing jitter. REBIRTH_SIGNAL camuflado como pacote comum. |
+| 2.2.0 | 2026 | Versão inicial pública. |
+| 2.2.1 | 2026 | HMAC-SHA256. Contador em `cifrar()`. SHA-256 determinístico. Entropia 256 bits. |
+| 2.3.0 | 2026 | Ressonância rebaixada a métrica. Gate real: HMAC + ctr. |
+| 2.3.1 | 2026 | REBIRTH_SIGNAL autenticado. Decaimento por contador. Verificação de cópia inicial. Overflow de contador com wrapar. Colapso de vetor gera exceção. Importar valida vetor. |
+| 2.4.0 | 2026 | Ofuscação de tráfego: padding determinístico-aleatório, tamanho de pacote configurável, timing jitter. REBIRTH_SIGNAL camuflado como pacote comum. |
 
 ---
 
@@ -308,4 +308,4 @@ MIT
 
 ---
 
-*Thiago Maciel — 2025 — v2.4.0*
+*Thiago Maciel — 2026 — v2.4.0*
