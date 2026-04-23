@@ -185,16 +185,29 @@ Sem chave estática. Sem handshake. P(t) apenas em RAM. Nada para roubar de disc
 
 ### 7.2 Resistência Quântica por Categoria
 
-Sem problema matemático subjacente (fatoração, logaritmo discreto, lattices, códigos). HMAC e SHA-256 usados apenas como KDF e autenticador — resistentes a Grover (2^128 segurança).
+Sem problema matemático subjacente (fatoração, logaritmo discreto, lattices, códigos). 
+HMAC e SHA-256 usados apenas como KDF e autenticador — resistentes a Grover (2^128 segurança).
 
-### 7.2.1 Deslocamento de Vetor em $R^{256}$
-A segurança não reside mais na ocultação de um segredo estático, mas na trajetória de um estado dinâmico. O atacante quântico enfrenta uma explosão combinatória de caminhos históricos, onde cada mensagem validada altera a topologia do espaço de busca.
+### 7.2.1 Forward Secrecy Information-Theoretic
 
-### 7.2.2 Camuflagem Metabólica
-A inclusão de padding determinístico e jitter configurável transforma o tráfego em ruído branco estatístico. O protocolo não apenas cifra a informação; ele anula a existência da própria comunicação perante sistemas de análise de fluxo baseados em IA ou heurística.
+Cada evolução de estado P(t+1) = normalize((1-α)·P(t) + α·P_msg) é não-bijetiva. 
+Múltiplos pares (P_anterior, mensagem) produzem o mesmo P_atual. 
+Atacante com P_atual não pode reconstruir P_anterior unicamente, mesmo com poder 
+computacional ilimitado. Mensagens passadas são irrecuperáveis.
 
-### 7.2.3 Sincronia Bio-Inspirada
-O uso de Similaridade de Cosseno e HMAC garante uma defesa em profundidade:HMAC: Barreira lógica de integridade.Cosseno: Sensor de vitalidade (ressonância). Se a métrica cair, o sistema executa o REBIRTH_SIGNAL autenticado, forçando a regeneração do par.
+### 7.2.2 Ofuscação de Tráfego
+
+Padding determinístico derivado de SHA-256(P_hash ‖ ctr) preenche todos os pacotes 
+até tamanho constante. Para observador sem P_hash, padding é indistinguível de 
+aleatório. Jitter aleatório mascara intervalos entre transmissões. REBIRTH_SIGNAL 
+é estruturalmente idêntico a pacote comum (ctr=0, ciphertext=vazio, MAC autenticado).
+
+### 7.2.3 Sincronia por Gate Criptográfico
+
+HMAC-SHA256: verificação de integridade e autenticação de cada mensagem.
+Contador monotônico: anti-replay e ordenação.
+Ressonância (cos_sim): métrica observacional de vitalidade. Se V(t) < ε, 
+sistema dispara renascimento coordenado autenticado.
 
 ### 7.3 Confidencialidade, Integridade e Autenticação
 
