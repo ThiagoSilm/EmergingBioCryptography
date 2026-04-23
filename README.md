@@ -1,3 +1,5 @@
+[![ePrint](https://img.shields.io/badge/IACR%20ePrint-2026%2F109045-blue)](https://eprint.iacr.org/2026/109045)
+
 # EmergingBioCryptography / CRIPTOGRAFIA BIO-EMERGENTE
 
 ### Segurança como Propriedade de História Compartilhada Irreversível
