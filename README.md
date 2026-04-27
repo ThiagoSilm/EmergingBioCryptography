@@ -1,14 +1,10 @@
-[![IACR ePrint](https://img.shields.io/badge/IACR%20ePrint-2026%2F109045-blue)](https://eprint.iacr.org/2026/109045)
-
 # Emerging Bio Cryptography (Criptografia Bio-Emergente) v2.4.0
 
 **Segurança como Propriedade de História Compartilhada Irreversível**
 
 Paradigma criptográfico distinto. Segurança não reside em chave estática ou dureza computacional, mas emerge da evolução irreversível de um estado compartilhado. Imune a ataques clássicos e quânticos por não apresentar problema matemático endereçável.
 
-**Repositório:** [https://github.com/ThiagoSilm/EmergingBioCryptography](https://github.com/ThiagoSilm/EmergingBioCryptography)  
-**Artigo Científico (IACR ePrint):** [https://eprint.iacr.org/2026/109045](https://eprint.iacr.org/2026/109045)  
-
+**Repositório:** [https://github.com/ThiagoSilm/EmergingBioCryptography](https://github.com/ThiagoSilm/EmergingBioCryptography) 
 ---
 
 ## 1. O Problema com Criptografia Estática
